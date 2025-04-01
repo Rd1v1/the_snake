@@ -9,6 +9,7 @@ GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 CENTER_SCREEN = (SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT // 2 - 20)
+HIGH_SCORE = 0
 
 # Направления движения:
 UP = (0, -1)
@@ -26,10 +27,16 @@ BORDER_COLOR = (93, 216, 228)
 APPLE_COLOR = (255, 0, 0)
 
 # Цвет змейки
-SNAKE_COLOR = (0, 255, 0)
+SNAKE_COLOR = (165, 42, 42)
+
+# # Цвет камня
+# STONE_COLOR = (128, 128, 128)
+
+# # Цвет отравы
+# POISON_COLOR = (0, 255, 0)
 
 # Скорость движения змейки:
-SPEED = 7
+SPEED = 20
 
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
@@ -57,17 +64,20 @@ class GameObject:
 class Apple(GameObject):
     """Класс для логики яблока"""
 
-    def __init__(self) -> None:
+    def __init__(self, snake) -> None:
         super().__init__()
+        self.snake = snake
         self.randomize_position()
         self.body_color = APPLE_COLOR
 
     def randomize_position(self):
-        """Метод для задания рандомной позиции яблока"""
-        x_pos = randint(0, GRID_WIDTH - 1) * GRID_SIZE
-        y_pos = randint(0, GRID_HEIGHT - 1) * GRID_SIZE
-
-        self.position = x_pos, y_pos
+        while True:
+            x_pos = randint(0, GRID_WIDTH - 1) * GRID_SIZE
+            y_pos = randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+            position = (x_pos, y_pos)
+            if position not in self.snake.positions:
+                self.position = position
+                break
 
     def draw(self):
         """Отрисовка яблока"""
@@ -79,7 +89,7 @@ class Apple(GameObject):
 class Snake(GameObject):
     """Класс для логики змейки"""
 
-    def __init__(self) -> None:
+    def __init__(self, font) -> None:
         super().__init__()
         self.positions: list[tuple] = [self.position]
         self.body_color = SNAKE_COLOR
@@ -87,6 +97,7 @@ class Snake(GameObject):
         self.direction = RIGHT
         self.next_direction = None
         self.last = None
+        self.font = font
 
     def update_direction(self):
         """Метод для обновления направления змейки"""
@@ -123,6 +134,7 @@ class Snake(GameObject):
         self.direction = RIGHT
         self.next_direction = None
         screen.fill(BOARD_BACKGROUND_COLOR)
+        self.update_highscore_text()
 
     def draw(self):
         """Отрисовка змейки"""
@@ -141,6 +153,12 @@ class Snake(GameObject):
             last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
 
+    def update_highscore_text(self):    
+        """Обновляет текст Highscore на экране."""
+        global HIGH_SCORE
+        text = self.font.render(f"Highscore: {HIGH_SCORE}", True, (255, 255, 255))
+        screen.blit(text, (5, 5))
+
 
 def handle_keys(game_object):
     """Захват движения клавиш"""
@@ -157,35 +175,45 @@ def handle_keys(game_object):
                 game_object.next_direction = LEFT
             elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
                 game_object.next_direction = RIGHT
-
+            elif event.key == pygame.K_ESCAPE:
+                return True
 
 def main():
     """Логика игры"""
     # Инициализация PyGame:
     pygame.init()
+    global HIGH_SCORE 
+    font = pygame.font.Font(None, 36)
+    # text = font.render(f"Highscore: {HIGH_SCORE}", True, (255, 255, 255))
+    # screen.blit(text, (5, 5)) 
+
+    
     # Тут нужно создать экземпляры классов.
-    apple = Apple()
-    snake = Snake()
+    snake = Snake(font)
+    apple = Apple(snake)
 
     while True:
         clock.tick(SPEED)
-        handle_keys(snake)
+        if handle_keys(snake):  
+            running = False  
+            break        
+
         snake.update_direction()
         snake.move()
 
         if apple.position == snake.get_head_position():
             snake.length += 1
             apple.randomize_position()
+            if snake.length > HIGH_SCORE:
+                HIGH_SCORE = snake.length
 
         snake.draw()
         apple.draw()
+        
+        text = font.render(f"Highscore: {HIGH_SCORE}", True, (255, 255, 255))
+        screen.blit(text, (5, 5)) 
 
         pygame.display.update()
-    # Тут опишите основную логику игры.
-
 
 if __name__ == '__main__':
     main()
-
-
-# Метод обновления направления после нажатия на кнопку
