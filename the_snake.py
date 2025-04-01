@@ -194,6 +194,8 @@ def main():
             if snake.length > HIGH_SCORE:
                 HIGH_SCORE = snake.length
 
+        screen.fill(BOARD_BACKGROUND_COLOR)
+
         snake.draw()
         apple.draw()
         
