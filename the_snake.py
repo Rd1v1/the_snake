@@ -50,19 +50,16 @@ clock = pygame.time.Clock()
 
 # Тут опишите все классы игры.
 class GameObject:
-    """Базовый класс для игровых объектов"""
 
     def __init__(self) -> None:
         self.position = CENTER_SCREEN
         self.body_color: Optional[tuple] = None
 
     def draw(self):
-        """Метод для отрисовки"""
         pass
 
 
 class Apple(GameObject):
-    """Класс для логики яблока"""
 
     def __init__(self, snake) -> None:
         super().__init__()
@@ -80,14 +77,12 @@ class Apple(GameObject):
                 break
 
     def draw(self):
-        """Отрисовка яблока"""
         rect = (pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE)))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
 
 class Snake(GameObject):
-    """Класс для логики змейки"""
 
     def __init__(self, font) -> None:
         super().__init__()
@@ -100,17 +95,14 @@ class Snake(GameObject):
         self.font = font
 
     def update_direction(self):
-        """Метод для обновления направления змейки"""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
     def get_head_position(self):
-        """Получение головы змейки"""
         return self.positions[0]
 
     def move(self):
-        """Метод для отработки логики движения"""
         x_head, y_head = self.get_head_position()
         x_shift, y_shift = tuple(
             [coord * GRID_SIZE for coord in self.direction])
@@ -127,7 +119,6 @@ class Snake(GameObject):
             self.last = self.positions.pop()
 
     def reset(self):
-        """Возврат змейки в исходное состояние"""
         self.positions.clear()
         self.positions.append(CENTER_SCREEN)
         self.length = 1
@@ -137,7 +128,6 @@ class Snake(GameObject):
         self.update_highscore_text()
 
     def draw(self):
-        """Отрисовка змейки"""
         for position in self.positions[:-1]:
             rect = (pygame.Rect(position, (GRID_SIZE, GRID_SIZE)))
             pygame.draw.rect(screen, self.body_color, rect)
@@ -154,14 +144,12 @@ class Snake(GameObject):
             pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
 
     def update_highscore_text(self):    
-        """Обновляет текст Highscore на экране."""
         global HIGH_SCORE
         text = self.font.render(f"Highscore: {HIGH_SCORE}", True, (255, 255, 255))
         screen.blit(text, (5, 5))
 
 
 def handle_keys(game_object):
-    """Захват движения клавиш"""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -179,7 +167,6 @@ def handle_keys(game_object):
                 return True
 
 def main():
-    """Логика игры"""
     # Инициализация PyGame:
     pygame.init()
     global HIGH_SCORE 
